@@ -8,7 +8,7 @@ setup(
     name=package_name,
     version='0.0.0',
 
-    packages=['robot_control'],
+    packages=find_packages(),
 
     data_files=[
 
@@ -34,7 +34,7 @@ setup(
 
         (
             os.path.join('share', package_name, 'urdf'),
-            glob('my_robot_scripts/*.urdf')
+            glob('robot_control/urdf/*.urdf')
         ),
         
 
@@ -55,7 +55,7 @@ setup(
 
     entry_points={
         'console_scripts': [
-            'Robot_Arm = robot_control.Robot_Arm:main',
+            'Robot_Arm = robot_control.robots.robot_controller:main',
         ],
     },
 )

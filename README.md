@@ -60,6 +60,3 @@ This project is actively under development. New features, improvements, and docu
 * Improved memory system
 * Better reinforcement learning policies
 
-## License
-
-This project is open source under the MIT License.

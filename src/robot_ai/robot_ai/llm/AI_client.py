@@ -82,8 +82,8 @@ RETRY_DELAY           = 3    # seconds between retries
 RATE_LIMIT_COOLDOWN   = 200   # seconds before retrying a rate-limited model
 
 _rate_limited: dict[str, float] = {}
-PROMPT_PATH = r"/home/ali/ros2_arm/src/robot_ai/robot_ai/prompts/prompt.txt"
-MEMORY_PROMPT_PATH = r"/home/ali/ros2_arm/src/robot_ai/robot_ai/prompts/memoryprompt.txt"
+PROMPT_PATH = r""
+MEMORY_PROMPT_PATH = r""
 
 def load_system_prompt(PROMPT_PATH = PROMPT_PATH) -> str:
     try:

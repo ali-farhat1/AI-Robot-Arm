@@ -1,0 +1,554 @@
+<?xml version='1.0' encoding='utf-8'?>
+<robot name="robot_arm">
+
+
+  <mujoco>
+
+        <actuator>
+            <position joint="joint1" kp="100"/>
+            <position joint="joint2" kp="100"/>
+            <position joint="joint3" kp="100"/>
+            <position joint="joint4" kp="100"/>
+            <position joint="joint5" kp="100"/>
+        </actuator>
+
+    </mujoco>
+
+  <material name="gray">
+    <color rgba="0.7 0.7 0.7 1" />
+  </material>
+
+  <material name="black">
+    <color rgba="0 0 0 1" />
+  </material>
+
+  <material name="silver">
+    <color rgba="0.8 0.8 0.85 1" />
+  </material>
+
+  <link name="base_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.088 0.088 0.03" />
+      </geometry>
+      <origin xyz="0 0 0.015" rpy="0 0 0" />
+      <material name="black" />
+    </visual>
+  <collision><geometry>
+        <box size="0.088 0.088 0.03" />
+      </geometry>
+      <origin xyz="0 0 0.015" rpy="0 0 0" />
+      </collision></link>
+
+  <link name="servo1_body_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.054 0.025 0.043" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <material name="gray" />
+    </visual>
+  <collision><geometry>
+        <box size="0.054 0.025 0.043" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      </collision></link>
+
+  <joint name="base_to_servo1_body_joint" type="fixed">
+    <parent link="base_link" />
+    <child link="servo1_body_link" />
+    <origin xyz="0.015 0 0.0515" rpy="0 0 0" />
+  </joint>
+
+  <link name="servo1_horn_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder radius="0.01" length="0.01" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <material name="silver" />
+    </visual>
+  <collision><geometry>
+        <cylinder radius="0.01" length="0.01" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      </collision></link>
+
+  <joint name="joint1" type="revolute">
+    <parent link="servo1_body_link" />
+    <child link="servo1_horn_link" />
+    <origin xyz="0.015 0 0.0265" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="-1.57" upper="1.57" effort="1" velocity="1" />
+  </joint>
+
+  <link name="servo2_body_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.054 0.025 0.043" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <material name="gray" />
+    </visual>
+  <collision><geometry>
+        <box size="0.054 0.025 0.043" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      </collision></link>
+
+  <joint name="servo1_horn_to_servo2_body_joint" type="fixed">
+    <parent link="servo1_horn_link" />
+    <child link="servo2_body_link" />
+    <origin xyz="0 0 0.018" rpy="1.57 0 0" />
+  </joint>
+
+  <link name="servo2_horn_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder radius="0.01" length="0.01" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <material name="silver" />
+    </visual>
+  <collision><geometry>
+        <cylinder radius="0.01" length="0.01" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      </collision></link>
+
+  <joint name="joint2" type="revolute">
+    <parent link="servo2_body_link" />
+    <child link="servo2_horn_link" />
+    <origin xyz="0.015 0 -0.0265" rpy="0 0 0" />
+    <axis xyz="0 0 -1" />
+    <limit lower="-1.57" upper="1.57" effort="1" velocity="1" />
+  </joint>
+
+  <link name="upper_arm_h_bracket_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.004 0.025 0.13" />
+      </geometry>
+      <origin xyz="-0.03 0 0" rpy="0 0 0" />
+      <material name="black" />
+    </visual>
+    <visual>
+      <geometry>
+        <box size="0.003 0.025 0.13" />
+      </geometry>
+      <origin xyz="0.025 0 0" rpy="0 0 0" />
+      <material name="black" />
+    </visual>
+    <visual>
+      <geometry>
+        <box size="0.053 0.025 0.003" />
+      </geometry>
+      <origin xyz="-0.0013 0 0" rpy="0 0 0" />
+      <material name="black" />
+    </visual>
+  <collision><geometry>
+        <box size="0.004 0.025 0.13" />
+      </geometry>
+      <origin xyz="-0.03 0 0" rpy="0 0 0" />
+      </collision></link>
+
+  <joint name="servo2_horn_to_upper_arm_bracket_joint" type="fixed">
+    <parent link="servo2_horn_link" />
+    <child link="upper_arm_h_bracket_link" />
+    <origin xyz="0.004 0.0527 0.02" rpy="-1.57 1.57 0" />
+  </joint>
+
+  <link name="servo3_body_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.054 0.025 0.043" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <material name="gray" />
+    </visual>
+  <collision><geometry>
+        <box size="0.054 0.025 0.043" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      </collision></link>
+
+  <joint name="upper_arm_bracket_to_servo3_body_joint" type="fixed">
+    <parent link="upper_arm_h_bracket_link" />
+    <child link="servo3_body_link" />
+    <origin xyz="-0.007 -0.003 0.035" rpy="0 -1.57 0" />
+  </joint>
+
+  <link name="servo3_horn_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder radius="0.01" length="0.01" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <material name="silver" />
+    </visual>
+  <collision><geometry>
+        <cylinder radius="0.01" length="0.01" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      </collision></link>
+
+  <joint name="joint3" type="revolute">
+    <parent link="servo3_body_link" />
+    <child link="servo3_horn_link" />
+    <origin xyz="0.015 0 -0.0265" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="-1.57" upper="1.57" effort="1" velocity="1" />
+  </joint>
+
+  <link name="forearm_cylinder_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder radius="0.013" length="0.065" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <material name="silver" />
+    </visual>
+  <collision><geometry>
+        <cylinder radius="0.013" length="0.065" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      </collision></link>
+
+  <joint name="servo3_horn_to_forearm_cylinder_joint" type="fixed">
+    <parent link="servo3_horn_link" />
+    <child link="forearm_cylinder_link" />
+    <origin xyz="0.044 0 0.03" rpy="0 1.57 0" />
+  </joint>
+
+  <link name="servo4_body_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.054 0.025 0.043" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <material name="gray" />
+    </visual>
+  <collision><geometry>
+        <box size="0.054 0.025 0.043" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      </collision></link>
+
+  <joint name="forearm_cylinder_to_servo4_body_joint" type="fixed">
+    <parent link="forearm_cylinder_link" />
+    <child link="servo4_body_link" />
+    <origin xyz="0 0 0.059" rpy="0 1.57 0" />
+  </joint>
+
+  <link name="servo4_horn_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder radius="0.01" length="0.01" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <material name="silver" />
+    </visual>
+  <collision><geometry>
+        <cylinder radius="0.01" length="0.01" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      </collision></link>
+
+  <joint name="joint4" type="revolute">
+    <parent link="servo4_body_link" />
+    <child link="servo4_horn_link" />
+    <origin xyz="-0.015 0 0.0265" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="-1.57" upper="1.57" effort="1" velocity="1" />
+  </joint>
+
+  <link name="wrist_bracket_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.004 0.025 0.065" />
+      </geometry>
+      <origin xyz="-0.03 0 0" rpy="0 0 0" />
+      <material name="black" />
+    </visual>
+    <visual>
+      <geometry>
+        <box size="0.003 0.025 0.065" />
+      </geometry>
+      <origin xyz="0.025 0 0" rpy="0 0 0" />
+      <material name="black" />
+    </visual>
+    <visual>
+      <geometry>
+        <box size="0.053 0.025 0.003" />
+      </geometry>
+      <origin xyz="-0.0013 0 0.0325" rpy="0 0 0" />
+      <material name="black" />
+    </visual>
+  <collision><geometry>
+        <box size="0.004 0.025 0.065" />
+      </geometry>
+      <origin xyz="-0.03 0 0" rpy="0 0 0" />
+      </collision></link>
+
+  <joint name="servo4_horn_to_wrist_bracket_joint" type="fixed">
+    <parent link="servo4_horn_link" />
+    <child link="wrist_bracket_link" />
+    <origin xyz="-0.0275 0 -0.018" rpy="0 -1.57 0" />
+  </joint>
+
+  <link name="servo5_body_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.04950 0.02004 0.043" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <material name="gray" />
+    </visual>
+  <collision><geometry>
+        <box size="0.04950 0.02004 0.043" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      </collision></link>
+
+  <joint name="wrist_bracket_to_servo5_body_joint" type="fixed">
+    <parent link="wrist_bracket_link" />
+    <child link="servo5_body_link" />
+    <origin xyz="0 0 0.02" rpy="0 0 0" />
+  </joint>
+
+  <link name="servo5_horn_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder radius="0.01" length="0.01" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <material name="silver" />
+    </visual>
+  <collision><geometry>
+        <cylinder radius="0.01" length="0.01" />
+      </geometry>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      </collision></link>
+
+  <joint name="joint5" type="revolute">
+    <parent link="servo5_body_link" />
+    <child link="servo5_horn_link" />
+    <origin xyz="-0.015 0 0.0265" rpy="0 0 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="-1.57" upper="1.57" effort="1" velocity="1" />
+  </joint>
+
+  <link name="left_finger_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.01 0.01 0.113" />
+      </geometry>
+      <origin xyz="0 0 0.0565" rpy="0 0 0" />
+      <material name="black" />
+    </visual>
+  <collision><geometry>
+        <box size="0.01 0.01 0.113" />
+      </geometry>
+      <origin xyz="0 0 0.0565" rpy="0 0 0" />
+      </collision></link>
+
+  <joint name="servo5_horn_to_left_finger_joint" type="fixed">
+    <parent link="servo5_horn_link" />
+    <child link="left_finger_link" />
+    <origin xyz="-0.009 0 0" rpy="0 0 0" />
+  </joint>
+
+  <link name="right_finger_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.01 0.01 0.113" />
+      </geometry>
+      <origin xyz="0.009 0.015 0.0565" rpy="0 0 0" />
+      <material name="black" />
+    </visual>
+  <collision><geometry>
+        <box size="0.01 0.01 0.113" />
+      </geometry>
+      <origin xyz="0.009 0.015 0.0565" rpy="0 0 0" />
+      </collision></link>
+
+  <joint name="servo5_horn_to_right_finger_joint" type="fixed">
+    <parent link="servo5_horn_link" />
+    <child link="right_finger_link" />
+    <origin xyz="0 -0.015 0" rpy="0 0 0" />
+  </joint>
+
+  <link name="servo6_body_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <box size="0.04950 0.02004 0.06" />
+      </geometry>
+      <origin xyz="0.01 0 0" rpy="0 0 0" />
+      <material name="gray" />
+    </visual>
+  <collision><geometry>
+        <box size="0.04950 0.02004 0.06" />
+      </geometry>
+      <origin xyz="0.01 0 0" rpy="0 0 0" />
+      </collision></link>
+
+  <joint name="left_finger_to_servo6_body_joint" type="fixed">
+    <parent link="left_finger_link" />
+    <child link="servo6_body_link" />
+    <origin xyz="0.03 -0.05 0.02" rpy="1.57 0 1.57" />
+  </joint>
+
+  <link name="servo6_horn_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+    <visual>
+      <geometry>
+        <cylinder radius="0.01" length="0.01" />
+      </geometry>
+      <origin xyz="0 0 0.07" rpy="0 0 0" />
+      <material name="silver" />
+    </visual>
+  <collision><geometry>
+        <cylinder radius="0.01" length="0.01" />
+      </geometry>
+      <origin xyz="0 0 0.07" rpy="0 0 0" />
+      </collision></link>
+
+  <joint name="joint6" type="fixed">
+    <parent link="servo6_body_link" />
+    <child link="servo6_horn_link" />
+    <origin xyz="-0.03002 0 -0.023" rpy="0 1.57 0" />
+    <axis xyz="0 0 1" />
+    <limit lower="-1.57" upper="1.57" effort="1" velocity="1" />
+  </joint>
+
+  <link name="tool_link">
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+  </link>
+
+  <joint name="tool_joint" type="fixed">
+    <parent link="servo6_horn_link" />
+    <child link="tool_link" />
+    <origin xyz="0 0 0.113" rpy="0 0 0" />
+  </joint>
+
+  <link name="ultrasonic_sensor_frame">
+    <visual>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.02 0.04 0.02" />
+      </geometry>
+      <material name="silver" />
+    </visual>
+    <collision>
+      <origin xyz="0 0 0" rpy="0 0 0" />
+      <geometry>
+        <box size="0.02 0.04 0.02" />
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.9" />
+      <origin xyz="0 0 0" />
+      <inertia ixx="0.001" ixy="0" ixz="0" iyy="0.001" iyz="0" izz="0.001" />
+    </inertial>
+  </link>
+
+  <joint name="servo6_body_to_ultrasonic_sensor_frame_joint" type="fixed">
+      <parent link="servo6_body_link" /> 
+      <child link="ultrasonic_sensor_frame" />
+      <origin xyz="0.0 0.017 0.0" rpy="1.55 0.0 0.0" />
+  </joint>
+
+</robot>

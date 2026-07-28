@@ -19,7 +19,7 @@ src/
 ├── robot_ai/             # AI brain and memory system
 ├── robot_control/        # Robot arm control and reinforcement learning
 ├── robot_ui/             # User interface
-└── ultrasonic_mapping/   # Ultrasonic sensor integration
+└── ultrasonic_mapping/   # Ultrasonic sensor integration (Maps ultrasonoic input to 3d Rviz)
 ```
 
 ## Technologies
@@ -56,7 +56,6 @@ This project is actively under development. New features, improvements, and docu
 
 * Computer vision integration
 * Voice interaction
-* Autonomous navigation
 * Improved memory system
 * Better reinforcement learning policies
 

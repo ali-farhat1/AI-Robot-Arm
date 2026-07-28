@@ -12,7 +12,7 @@ import numpy as np
 
 # Connect to Serial
 print("OKAY")
-ser = serial.Serial("/dev/ttyUSB0", 115200, timeout=1)
+#ser = serial.Serial("/dev/ttyUSB0", 115200, timeout=1)
 
 # -----------------------------
 # Load URDF

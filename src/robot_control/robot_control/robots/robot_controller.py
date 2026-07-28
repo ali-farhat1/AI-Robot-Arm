@@ -12,13 +12,13 @@ import numpy as np
 
 # Connect to Serial
 print("OKAY")
-# ser = serial.Serial("/dev/ttyUSB0", 115200, timeout=1)
+ser = serial.Serial("/dev/ttyUSB0", 115200, timeout=1)
 
 # -----------------------------
 # Load URDF
 # -----------------------------
 my_chain = ikpy.chain.Chain.from_urdf_file(
-    r"/home/ali/ros2_arm/src/my_robot_scripts/my_robot_scripts/Robot.urdf",
+    r"/home/ali/ros2_arm/src/robot_control/robot_control/urdf/Robot_stable.urdf",
     active_links_mask=[
         False, False, True,  # 0:Base, 1:fixed, 2:joint1
         False, True,         # 3:fixed, 4:joint2

@@ -1,10 +1,3 @@
-"""
-Hybrid memory = structured fields (exact match) + semantic embeddings (fuzzy match).
-
-Requires: pip install sentence-transformers
-Run on your own machine (needs internet on first run to download the model).
-"""
-
 import time
 import re
 import pickle

@@ -1,9 +1,10 @@
 import json
 import os
+from pathlib import Path
 
 # ─── Paths ───────────────────────────────────────────────────────────────────
 
-BASE = r"/home/ali/ros2_arm/src/robot_ai/robot_ai/Memory"
+BASE = str(Path(__file__).resolve().parent / "memory")
 
 SHORT_MEMORY = os.path.join(BASE, "chat_memory.json")
 CURIOSITIES  = os.path.join(BASE, "curiosities.json")

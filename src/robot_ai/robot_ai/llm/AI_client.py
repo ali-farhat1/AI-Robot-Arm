@@ -11,14 +11,15 @@ from typing import Optional
 import threading
 import requests
 from .memory_manager import *
+from dotenv import load_dotenv
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("openrouter_client")
 
-
-#API_KEY_PATH = BASE_DIR / "config" / "api_keys.json"
-
 BASE_DIR = Path(__file__).resolve().parent
+
+API_KEY_PATH = BASE_DIR / "api_keys.env"
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
 PROMPT_PATH = str(BASE_DIR / "prompts" / "prompt.txt")
 MEMORY_PROMPT_PATH = str(BASE_DIR / "prompts" / "memoryprompt.txt")
@@ -102,7 +103,7 @@ def load_system_prompt(PROMPT_PATH = PROMPT_PATH) -> str:
 class OpenRouterClient:
 
     def __init__(self) -> None:
-        self.api_key  = "REDACTED"
+        self.api_key  = OPENROUTER_API_KEY
         self._headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type":  "application/json",

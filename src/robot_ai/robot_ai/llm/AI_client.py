@@ -18,6 +18,10 @@ logger = logging.getLogger("openrouter_client")
 
 #API_KEY_PATH = BASE_DIR / "config" / "api_keys.json"
 
+BASE_DIR = Path(__file__).resolve().parent
+
+PROMPT_PATH = str(BASE_DIR / "prompts" / "prompt.txt")
+MEMORY_PROMPT_PATH = str(BASE_DIR / "prompts" / "memoryprompt.txt")
 
 
 
@@ -37,6 +41,7 @@ def _load_api_key() -> str:
 
 # TODO: split these Ai's in three levels of intelligence, and use the 2nd level Ai as the main one to decide what to use for each task.
 TEXT_MODELS: list[str] = [
+    "inclusionai/ling-3.0-flash:free",
     "nvidia/nemotron-3-nano-30b-a3b:free",
     "nvidia/nemotron-3-super-120b-a12b:free",
     "arcee-ai/trinity-large-preview:free",
@@ -82,8 +87,7 @@ RETRY_DELAY           = 3    # seconds between retries
 RATE_LIMIT_COOLDOWN   = 200   # seconds before retrying a rate-limited model
 
 _rate_limited: dict[str, float] = {}
-PROMPT_PATH = r""
-MEMORY_PROMPT_PATH = r""
+
 
 def load_system_prompt(PROMPT_PATH = PROMPT_PATH) -> str:
     try:
@@ -98,7 +102,7 @@ def load_system_prompt(PROMPT_PATH = PROMPT_PATH) -> str:
 class OpenRouterClient:
 
     def __init__(self) -> None:
-        self.api_key  = "OPENROUTER_API_KEY"
+        self.api_key  = "REDACTED"
         self._headers = {
             "Authorization": f"Bearer {self.api_key}",
             "Content-Type":  "application/json",
@@ -207,6 +211,7 @@ class OpenRouterClient:
             result = self._call(m, messages, max_tokens, temperature, response_format)
             if result:
                 #logger.info(f"[OpenRouter] ✓ Success: {m}")
+                print(m)
                 return result
 
         raise RuntimeError(

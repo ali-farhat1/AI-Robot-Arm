@@ -9,6 +9,7 @@ from rclpy.duration import Duration
 from scipy.spatial.transform import Rotation as R
 
 
+
 from robot_ai.llm.AI_client import OpenRouterClient
 
 actions = ["up_down", "right_left"]
@@ -17,7 +18,7 @@ class Brain(Node):
     def __init__(self):
         super().__init__('Brain')
 
-        self.action_taker_publisher = self.create_publisher(String, 'actions', 10) # Publish Ai Actions
+        self.action_taker_publisher = self.create_publisher(String, '/actions', 10) # Publish Ai Actions
 
         self.timer = self.create_timer(0.2, self.live_coords)
 
@@ -44,6 +45,8 @@ class Brain(Node):
     
 
     def live_coords(self):
+        # TODO: make it be a dicitonary which stores TF values from 20 seconds/ticks before to now
+
         frames = [
             "servo1_body_link",
             "servo2_body_link",
@@ -97,24 +100,25 @@ class Brain(Node):
 
     def ai_request_callback(self, msg):
         prompt = msg.data
-
         response = self.ai_chat(prompt)
 
-        actions = response.get("action_sequence", [])
+        actions = []
+        if response:
+            actions = response.get("action_sequence", [])
 
         for action in actions:
             self.take_action(action)
+
 
     
     def ai_chat(self, prompt):
         try:
             response = self.client.chat_main(
                 prompt=prompt,
-                addtional_ai_context={"Current Robot Tf Reading": self.live_servo_coord} if self.live_servo_coord else ""
+                addtional_ai_context={"Robot Tf Reading from 20 seconds ago to now": self.live_servo_coord} if self.live_servo_coord else ""
             )
 
             ros_msg = String()
-            #ros_msg.data = str(response["text"])
             ros_msg.data = str(response)
 
             self.ai_response_publisher.publish(ros_msg)

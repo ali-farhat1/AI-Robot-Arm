@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float32MultiArray, String
+from ..llm.hybrid_memory import SkyeMemory
 
 actions = [up_down, right_left]
 
@@ -10,7 +11,7 @@ class RobotActions(Node):
 
         self.servo_publisher = self.create_publisher(Float32MultiArray, 'servo_angles', 10)
 
-        self.action_taker = self.create_subscription(String, 'actions', self.action_taker_callback, 10)
+        self.action_taker = self.create_publisher(String, '/actions', 10)
 
     def action_taker_callback(self, Action):
         if lower(Action) not in actions:
@@ -20,7 +21,6 @@ class RobotActions(Node):
 
     def take_action(self, Action):
         ...
-
 
 if __name__ == "__main__":
     Node = RobotActions

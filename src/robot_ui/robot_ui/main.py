@@ -28,6 +28,7 @@ class RobotUI(Node):
     def ai_callback(self, msg):
         self.ai_response = msg.data
         print("AI:", self.ai_response)
+        
 
     def main_chat(self):
         while rclpy.ok():

@@ -9,6 +9,7 @@ import threading
 from dataclasses import dataclass, field
 import math
 import numpy as np
+from pathlib import Path
 
 # Connect to Serial
 print("OKAY")
@@ -17,8 +18,13 @@ print("OKAY")
 # -----------------------------
 # Load URDF
 # -----------------------------
+
+BASE_DIR = Path(__file__).resolve().parents[2]  # robot_control/robot_control
+
+URDF_PATH = BASE_DIR / "urdf" / "Robot_stable.urdf"
+
 my_chain = ikpy.chain.Chain.from_urdf_file(
-    r"/home/ali/ros2_arm/src/robot_control/robot_control/urdf/Robot_stable.urdf",
+    URDF_PATH,
     active_links_mask=[
         False, False, True,  # 0:Base, 1:fixed, 2:joint1
         False, True,         # 3:fixed, 4:joint2
@@ -44,10 +50,9 @@ class RobotArm(Node):
         super().__init__('RobotArm_Node')
         self.publisher = self.create_publisher(JointState, '/joint_states', 10)
         self.servo_publisher = self.create_publisher(Float32MultiArray, 'servo_angles', 10)
-        self.ai_action = self.create_subscription(String, "actions", self.action_callback, 10)
+        self.ai_action = self.create_subscription(String, "/actions", self.action_callback, 10)
         self.live_servo_movements = self.create_subscription(
-            Float32MultiArray, 'live_servo_movements', self.servo_movements_callback, 10
-        )
+            Float32MultiArray, 'live_servo_movements', self.servo_movements_callback, 10)
         
         self.cur_x = None
         self.cur_y = None
@@ -70,7 +75,9 @@ class RobotArm(Node):
         self.state = "idle"
         self.target = None
         self.original = None
-        self.manual_timer = self.create_timer(0.2, self.manual_command_loop)
+
+        # Debugging purposes
+        #self.manual_timer = self.create_timer(0.2, self.manual_command_loop)
 
     def starting_pose(self):
         self.s0, self.s1, self.s2, self.s3, self.s4, self.s5 = cfg.ik_start_pose

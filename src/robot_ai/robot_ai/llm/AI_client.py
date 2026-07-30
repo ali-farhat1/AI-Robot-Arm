@@ -1,28 +1,35 @@
-import rclpy
-from rclpy.node import Node
-from std_msgs.msg import String
+# Made By Faith Makes
+
+
 import json
 import sys
 import time
 import base64
 import logging
 from pathlib import Path
+from ament_index_python.packages import get_package_share_directory
 from typing import Optional
 import threading
 import requests
 from .memory_manager import *
 from dotenv import load_dotenv
+from .hybrid_memory import SkyeMemory
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("openrouter_client")
 
+memory = SkyeMemory()
+
 BASE_DIR = Path(__file__).resolve().parent
 
-API_KEY_PATH = BASE_DIR / "api_keys.env"
+load_dotenv(dotenv_path=BASE_DIR / "api_keys.env")
+
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 
-PROMPT_PATH = str(BASE_DIR / "prompts" / "prompt.txt")
-MEMORY_PROMPT_PATH = str(BASE_DIR / "prompts" / "memoryprompt.txt")
+ROOT = Path(__file__).resolve().parent.parent
+
+PROMPT_PATH = ROOT / "prompts" / "prompt.txt"
+MEMORY_PROMPT_PATH = ROOT / "prompts" / "memoryprompt.txt"
 
 
 
@@ -250,33 +257,45 @@ class OpenRouterClient:
         max_tokens: int = DEFAULT_MAX_TOKENS,
         addtional_ai_context: dict = {}
     ) -> dict:
+
         messages = [
             {"role": "system", "content": system + str(addtional_ai_context)},
-            {"role": "user",   "content": prompt},
+            {"role": "user", "content": prompt},
         ]
-        raw = self._call_with_fallback(
-            TEXT_MODELS, messages, model, max_tokens, temperature=0.2
-        )
 
-        clean = raw.strip()
-        if clean.startswith("```"):
-            parts = clean.split("```")
-            clean = parts[1] if len(parts) > 1 else clean
-            if clean.startswith("json"):
-                clean = clean[4:]
-        clean = clean.strip().rstrip("`").strip()
+        while True:
+            raw = self._call_with_fallback(
+                TEXT_MODELS, messages, model, max_tokens, temperature=0.2
+            )
 
-        try:
-            return json.loads(clean)
-        except json.JSONDecodeError as e:
-            logger.error(
-                f"[OpenRouter] JSON parse failed: {e}\n"
-                f"Raw response (first 300 chars): {raw[:300]}"
-            )
-            raise ValueError(
-                f"Model returned unparseable JSON: {e}\n"
-                f"Raw output: {raw[:200]}"
-            )
+            try:
+                clean = raw.strip()
+
+                if clean.startswith("```"):
+                    parts = clean.split("```")
+                    clean = parts[1] if len(parts) > 1 else clean
+                    if clean.startswith("json"):
+                        clean = clean[4:]
+
+                clean = clean.strip().rstrip("`").strip()
+
+                return json.loads(clean)
+
+            except json.JSONDecodeError as e:
+                logger.warning(f"Invalid JSON: {e}")
+
+                messages.append({
+                    "role": "assistant",
+                    "content": raw
+                })
+                messages.append({
+                    "role": "user",
+                    "content": (
+                        "Your previous response was not valid JSON. "
+                        "Return ONLY valid JSON. Do not use markdown or ```json fences."
+                    )
+                })
+           
 
     def vision(
         self,
@@ -359,12 +378,12 @@ class OpenRouterClient:
         addtional_ai_context: dict = {}
         ) -> dict:
 
-        if prompt == "exit":
-            current = str(build_current_memories()) + str(self.chat)
+        if prompt.lower() == "exit":
+            current = str(self.chat)
             memeory_saver = self.chat_json(prompt=current, system=load_system_prompt(MEMORY_PROMPT_PATH))
-            long_term_memory(memeory_saver)
+            memory.ai_add(memeory_saver)
             print(memeory_saver)
-            return
+            return {}
         
         
         ai_context = str(addtional_ai_context) + ", " + "current chat: " + str(self.chat)

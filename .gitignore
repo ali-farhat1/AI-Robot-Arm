@@ -4,3 +4,5 @@ log/
 .vscode/
 __pycache__/
 *.pyc
+robot_ai/llm/api_keys.env
+robot_ai/robot_ai/memory

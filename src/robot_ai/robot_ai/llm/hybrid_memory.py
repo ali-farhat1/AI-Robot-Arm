@@ -11,7 +11,14 @@ import pickle
 import numpy as np
 from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
+from pathlib import Path
 
+import os
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
+
+BASE = str(Path(__file__).resolve().parent.parent / "memory")
+MEMORY_PATH = os.path.join(BASE, "skye_memory.pkl")
 
 # Which structured fields belong to each category. `text` and `time` are
 # added automatically to every record regardless of category.
@@ -25,7 +32,7 @@ CATEGORY_FIELDS = {
 
 
 class SkyeMemory:
-    def __init__(self, save_path: str = "skye_memory.pkl"):
+    def __init__(self, save_path: str = MEMORY_PATH):
         self.model = SentenceTransformer('all-MiniLM-L6-v2')
         self.save_path = save_path
         self.records = []
@@ -35,6 +42,7 @@ class SkyeMemory:
     def save(self):
         with open(self.save_path, "wb") as f:
             pickle.dump({"records": self.records, "embeddings": self.embeddings}, f)
+            print("Saved")
 
     def load(self):
         try:
@@ -44,6 +52,21 @@ class SkyeMemory:
             self.embeddings = data["embeddings"]
         except FileNotFoundError:
             pass
+
+    
+    def ai_add(self, categorized_memory: list):
+        """
+        categorized_memory: the list the AI sent back (each item = one memory record)
+        """
+        for memory in categorized_memory:
+            try:
+                category = memory["category"]
+                text = memory["text"]
+                extra_fields = {k: v for k, v in memory.items() if k not in ("category", "text")}
+                self.add(category, text=text, **extra_fields)
+            except (KeyError, ValueError) as e:
+                print(f"Skipped bad memory: {memory} ({e})")
+        
 
     def add(self, category: str, text: str = None, **fields):
         """

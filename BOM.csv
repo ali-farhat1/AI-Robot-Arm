@@ -1,0 +1,18 @@
+Category,Component,Description,Qty,Unit Price (USD),Total (USD),Status,Supplier,Notes
+Compute,D-Robotics RDK X5 AI Developer Kit,RDK X5 AI Developer Kit for ROS Robotics (8GB, 10 TOPS),1,190.00,190.00,Not Purchased,DFRobot,Main AI computer
+
+Power,Hobbywing UBEC 10A-CAR,10A UBEC (2–6S Input, 6.0/7.4/8.4V Output),1,13.96,13.96,Not Purchased,AliExpress,Stable 5V power supply
+Power,DC-DC Buck Converter,12V/24V to 5V 5A Buck Converter Module,1,10.67,10.67,Purchased,Amazon,Powers electronics
+
+Vision,H7 Plus 5MP Smart Camera,H7 Plus 5MP HD Smart Camera Module,1,48.61,48.61,Not Purchased,AliExpress,Primary vision sensor
+
+Control,ESP32 Development Board,ESP-WROOM-32 Type-C CP2102 Development Board,1,12.71,12.71,Purchased,AliExpress,Controls servos and peripherals
+
+Sensors,HC-SR04 Ultrasonic Sensor,Ultrasonic Distance Measuring Sensor,1,6.37,6.37,Purchased,Amazon,Obstacle detection
+
+Mechanics,6DOF Robot Arm Kit,Aluminium Robot Arm Kit with 6 Servo Motors and Claw,1,77.33,77.33,Purchased,AliExpress,Main robot manipulator
+
+,,,,,,
+,,Purchased Total,,,$107.08
+,,Not Purchased Total,,,$252.57
+,,Project Total,,,$359.65

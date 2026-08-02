@@ -24,7 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent
 
 load_dotenv(dotenv_path=BASE_DIR / "api_keys.env")
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY_2")
 
 ROOT = Path(__file__).resolve().parent.parent
 
@@ -248,6 +248,11 @@ class OpenRouterClient:
         return self._call_with_fallback(
             TEXT_MODELS, messages, model, max_tokens, temperature
         )
+
+    def recall_memory(self, query):
+        reponse = memory.recall(query)
+
+        return reponse
 
     def chat_json(
         self,

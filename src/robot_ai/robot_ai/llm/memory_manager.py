@@ -23,6 +23,12 @@ LONG_TERM_MAP = {
     "world_model": WORLD_MODEL,
 }
 
+# Clear short-term memory fresh every time the program starts
+os.makedirs(BASE, exist_ok=True)
+with open(SHORT_MEMORY, 'w', encoding='utf-8') as f:
+    json.dump([], f)
+
+
 # ─── Helpers ─────────────────────────────────────────────────────────────────
 
 def _load(path):

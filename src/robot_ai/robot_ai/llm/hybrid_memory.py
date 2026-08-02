@@ -4,6 +4,9 @@ what they represent, unified under one hybrid (keyword + semantic) search.
 
 Requires: pip install sentence-transformers
 """
+import os
+os.environ["HF_HUB_OFFLINE"] = "1"
+os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
 import time
 import re
@@ -13,9 +16,6 @@ from sentence_transformers import SentenceTransformer
 from sklearn.metrics.pairwise import cosine_similarity
 from pathlib import Path
 
-import os
-os.environ["HF_HUB_OFFLINE"] = "1"
-os.environ["TRANSFORMERS_OFFLINE"] = "1"
 
 BASE = str(Path(__file__).resolve().parent.parent / "memory")
 MEMORY_PATH = os.path.join(BASE, "skye_memory.pkl")
@@ -23,11 +23,11 @@ MEMORY_PATH = os.path.join(BASE, "skye_memory.pkl")
 # Which structured fields belong to each category. `text` and `time` are
 # added automatically to every record regardless of category.
 CATEGORY_FIELDS = {
-    "event":       ["what", "outcome"],
-    "people":      ["name", "relation", "facts"],
-    "curiosities": ["question", "context"],
-    "procedures":  ["name", "steps"],
-    "reflections": ["insight", "related_to"],
+    "event":       ["what", "outcome", "feeling"],
+    "people":      ["name", "relation", "facts", "feeling"],
+    "curiosities": ["question", "context", "feeling"],
+    "procedures":  ["name", "steps", "feeling"],
+    "reflections": ["insight", "related_to", "feeling"],
 }
 
 
@@ -58,14 +58,31 @@ class SkyeMemory:
         """
         categorized_memory: the list the AI sent back (each item = one memory record)
         """
+        added = []
+        skipped = []
+
         for memory in categorized_memory:
             try:
                 category = memory["category"]
                 text = memory["text"]
                 extra_fields = {k: v for k, v in memory.items() if k not in ("category", "text")}
                 self.add(category, text=text, **extra_fields)
+                added.append({"category": category, "text": text})
             except (KeyError, ValueError) as e:
-                print(f"Skipped bad memory: {memory} ({e})")
+                skipped.append({"memory": memory, "reason": str(e)})
+
+        result = {
+            "added_count": len(added),
+            "skipped_count": len(skipped),
+            "added": added,
+            "skipped": skipped,
+        }
+
+        if skipped:
+            for s in skipped:
+                print(f"Skipped bad memory: {s['memory']} ({s['reason']})")
+
+        return result
         
 
     def add(self, category: str, text: str = None, **fields):
@@ -101,7 +118,7 @@ class SkyeMemory:
         q_vec = self.model.encode([query])
         return cosine_similarity(q_vec, self.embeddings)[0]
 
-    def recall(self, query: str, top_k: int = 3, category: str = None, keyword_weight: float = 0.6):
+    def recall(self, query: str, top_k: int = 5, category: str = None, keyword_weight: float = 0.6):
         """
         category: optionally restrict search to one category (e.g. only "people").
         Leave as None to search everything.

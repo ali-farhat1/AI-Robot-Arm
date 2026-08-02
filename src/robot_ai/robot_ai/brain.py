@@ -12,13 +12,15 @@ from scipy.spatial.transform import Rotation as R
 
 from robot_ai.llm.AI_client import OpenRouterClient
 
-actions = ["up_down", "right_left"]
+robot_actions = ["up_down", "right_left", "look_forward", "look_up", "look_down", "tilt_left", "tilt_right"]
 
 class Brain(Node):
     def __init__(self):
         super().__init__('Brain')
 
-        self.action_taker_publisher = self.create_publisher(String, '/actions', 10) # Publish Ai Actions
+        self.action_taker_publisher = self.create_publisher(String, '/actions_input', 10) # Publish Ai Actions
+
+        self.robot_action = self.create_publisher(String, '/robot_action', 10) # AI controls Robot 
 
         self.timer = self.create_timer(0.2, self.live_coords)
 
@@ -39,8 +41,10 @@ class Brain(Node):
 
     def take_action(self, Action):
         msg = String()
-        msg.data = Action   
-        self.action_taker_publisher.publish(msg)
+        msg.data = Action
+
+        if Action in robot_actions:    
+            self.robot_action.publish(msg)
 
     
 
@@ -88,8 +92,6 @@ class Brain(Node):
                         "z": trans.transform.translation.z
                     }
 
-                    # Optional: Keep the print statement to see live updates
-                    #print(f"{frame}: {coords_dict[frame]['x']:.4f}, {coords_dict[frame]['y']:.4f}, {coords_dict[frame]['z']:.4f}")
 
                 except Exception as e:
                     #print(frame, e)
@@ -99,29 +101,69 @@ class Brain(Node):
 
 
     def ai_request_callback(self, msg):
-        prompt = msg.data
-        response = self.ai_chat(prompt)
+        response = self.ai_chat(msg.data)
+        if not response:
+            return
 
-        actions = []
-        if response:
-            actions = response.get("action_sequence", [])
+        response = self.resolve_memory(response)
+        if not response:
+            return
 
-        for action in actions:
+        for action in response.get("action_sequence", []):
             self.take_action(action)
 
+        # publish/handle response here same as before
+        msg = String()
+        msg.data = str(response)
 
-    
-    def ai_chat(self, prompt):
-        try:
-            response = self.client.chat_main(
-                prompt=prompt,
-                addtional_ai_context={"Robot Tf Reading from 20 seconds ago to now": self.live_servo_coord} if self.live_servo_coord else ""
+        self.ai_response_publisher.publish(msg)
+
+
+
+    def resolve_memory(self, response, previous_memory="", depth=0):
+        query = response.get("memory_query")
+        if not query:
+            return response
+
+        print("Searching Memory")
+        memory_result = self.client.recall_memory(query)
+        print(f"Memory Result: {memory_result}")
+        full_memory = str(previous_memory) + str(memory_result)
+
+        at_cap = depth >= 2  
+
+        context = {"recalled_memory": full_memory}
+        prompt = "Here is what you recalled."
+
+        if at_cap:
+            context["memory_search_limit_reached"] = True
+            prompt = (
+                "Here is what you recalled. This is the last memory you can search for right now — "
+                "you must answer with what you have, even if it's incomplete or uncertain."
             )
 
-            ros_msg = String()
-            ros_msg.data = str(response)
+        followup = self.ai_chat(prompt=prompt, addtional_ai_context=context)
 
-            self.ai_response_publisher.publish(ros_msg)
+        if not followup:
+            return None
+
+        if at_cap or not followup.get("memory_query"):
+            return followup
+
+        return self.resolve_memory(followup, previous_memory=full_memory, depth=depth + 1)
+
+            
+            
+    def ai_chat(self, prompt, addtional_ai_context = ""):
+        try:
+            context = {}
+            if self.live_servo_coord:
+                context["Robot Tf Reading from 20 seconds ago to now"] = self.live_servo_coord
+            if addtional_ai_context:
+                context.update(addtional_ai_context)
+
+            response = self.client.chat_main(prompt=prompt, addtional_ai_context=context)
+
 
             return response
 

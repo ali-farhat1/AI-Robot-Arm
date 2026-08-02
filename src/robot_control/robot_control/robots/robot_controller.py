@@ -19,7 +19,7 @@ print("OKAY")
 # Load URDF
 # -----------------------------
 
-BASE_DIR = Path(__file__).resolve().parents[2]  # robot_control/robot_control
+BASE_DIR = Path(__file__).resolve().parents[1]  # robot_control/robot_control
 
 URDF_PATH = BASE_DIR / "urdf" / "Robot_stable.urdf"
 
@@ -38,8 +38,8 @@ my_chain = ikpy.chain.Chain.from_urdf_file(
 # Organizing the dataclasses
 @dataclass
 class Config:
-    ik_start_pose: list = field(default_factory=lambda: [90, 90, 45, 90, 90, 10])
-    actions: list = field(default_factory=lambda: ["up_down", "right_left"])
+    ik_start_pose: list = field(default_factory=lambda: [90, 50, 15, 130, 90, 10])
+    actions: list = field(default_factory=lambda: ["up_down", "right_left", "look_forward", "look_up", "look_down", "tilt_left", "tilt_right"])
     action_load_time: float = 2
 
 cfg = Config()
@@ -50,14 +50,14 @@ class RobotArm(Node):
         super().__init__('RobotArm_Node')
         self.publisher = self.create_publisher(JointState, '/joint_states', 10)
         self.servo_publisher = self.create_publisher(Float32MultiArray, 'servo_angles', 10)
-        self.ai_action = self.create_subscription(String, "/actions", self.action_callback, 10)
+        self.ai_action = self.create_subscription(String, "/robot_action", self.action_callback, 10)
         self.live_servo_movements = self.create_subscription(
             Float32MultiArray, 'live_servo_movements', self.servo_movements_callback, 10)
-        
+
         self.cur_x = None
         self.cur_y = None
         self.cur_z = None
-        
+
         # Internally updates the angles of each joint
         self.s0 = None
         self.s1 = None
@@ -65,9 +65,9 @@ class RobotArm(Node):
         self.s3 = None
         self.s4 = None
         self.s5 = None
-        
+
         self.starting_pose()
-        
+
         # For Rviz
         self.rviz_timer = self.create_timer(0.2, self.update)
         # For Actions
@@ -80,31 +80,55 @@ class RobotArm(Node):
         #self.manual_timer = self.create_timer(0.2, self.manual_command_loop)
 
     def starting_pose(self):
+        # Move the arm to the configured default/home pose on startup
         self.s0, self.s1, self.s2, self.s3, self.s4, self.s5 = cfg.ik_start_pose
         self.sendCommand("N", self.s0, self.s1, self.s2, self.s3, self.s4, self.s5)
         print("Ready")
 
     def servo_movements_callback(self, msg):
+        # Update internal servo angles when a live movement message arrives
         if len(msg.data) >= 6:
             self.s0, self.s1, self.s2, self.s3, self.s4, self.s5 = msg.data[:6]
         else:
             self.get_logger().warn("Received servo message with fewer than 6 elements!")
 
     def action_callback(self, msg):
+        # Trigger a predefined action (e.g. up_down, right_left) if it's recognized
+        # TODO: Need to approve architecture since its based on hardcoded numbers 
+        # TODO:  Make a Que for the actions
+
         if msg.data not in cfg.actions:
             return
-            
+
+        print("ACTION IS:", msg.data)
+
         if msg.data == "up_down":
             self.original = self.s3
             self.target = max(self.s3 - 40, 0)
             self.state = "move_to_target"
             self.sendCommand(mode='M', s0=self.s0, s1=self.s1, s2=self.s2, s3=self.target, s4=self.s4, s5=self.s5)
-            
+
         elif msg.data == "right_left":
             self.original = self.s0
             self.target = min(self.s0 - 40, 180)
             self.state = "move_to_target"
             self.sendCommand(mode='M', s0=self.target, s1=self.s1, s2=self.s2, s3=self.s3, s4=self.s4, s5=self.s5)
+
+        elif msg.data == "look_forward":
+            self.starting_pose()
+
+        elif msg.data == "look_up":
+            self.sendCommand(mode='M', s0=self.s0, s1=self.s1, s2=self.s2, s3=0, s4=self.s4, s5=self.s5)
+
+        elif msg.data == "look_down":
+            self.sendCommand(mode='M', s0=self.s0, s1=self.s1, s2=self.s2, s3=180, s4=self.s4, s5=self.s5)
+
+        elif msg.data == "tilt_left":
+            self.sendCommand(mode='M', s0=self.s0, s1=self.s1, s2=self.s2, s3=self.s3, s4=135, s5=self.s5)
+
+        elif msg.data == "tilt_right":
+            self.sendCommand(mode='M', s0=self.s0, s1=self.s1, s2=self.s2, s3=self.s3, s4=45, s5=self.s5)
+
 
     def action_update(self):
         # STEP 1: reached target → go back
@@ -112,12 +136,12 @@ class RobotArm(Node):
             if abs(self.s3 - self.target) < 2 or abs(self.s0 - self.target) < 2:
                 self.state = "move_to_home"
                 self.sendCommand(
-                    mode='M', 
-                    s0=self.original + 40 if self.target == self.s0 else self.s0, 
-                    s1=self.s1, 
-                    s2=self.s2, 
-                    s3=self.original + 40 if self.target == self.s3 else self.s3, 
-                    s4=self.s4, 
+                    mode='M',
+                    s0=self.original if self.target == self.s0 else self.s0,
+                    s1=self.s1,
+                    s2=self.s2,
+                    s3=self.original if self.target == self.s3 else self.s3,
+                    s4=self.s4,
                     s5=self.s5
                 )
         # STEP 2: reached home → finish
@@ -125,17 +149,18 @@ class RobotArm(Node):
             if self.s3 == self.original or self.s0 == self.original:
                 self.state = "idle"
                 self.sendCommand(
-                    mode='M', 
-                    s0=self.original if self.target == self.s0 else self.s0, 
-                    s1=self.s1, 
-                    s2=self.s2, 
-                    s3=self.original if self.target == self.s3 else self.s3, 
-                    s4=self.s4, 
+                    mode='M',
+                    s0=self.original if self.target == self.s0 else self.s0,
+                    s1=self.s1,
+                    s2=self.s2,
+                    s3=self.original if self.target == self.s3 else self.s3,
+                    s4=self.s4,
                     s5=self.s5
                 )
 
     # ----- SENDING THE ANGLES TO RVIZ -----
     def update(self):
+        # Publish the current joint angles as a JointState message for Rviz visualization
         msg = JointState()
         msg.header.stamp = self.get_clock().now().to_msg()
         msg.name = ['joint1', 'joint2', 'joint3', 'joint4', 'joint5']
@@ -149,11 +174,13 @@ class RobotArm(Node):
         self.publisher.publish(msg)
 
     def clamp_angle(self, a):
+        # Keep a servo angle within the valid 0-180 degree range
         return max(0, min(180, a))
 
     def sendCommand(self, mode, s0, s1, s2, s3, s4, s5=0, move_time=1):
+        # Package servo angles into a message and publish/send them to the arm
         msg = Float32MultiArray()
-        self.s0, self.s1, self.s2, self.s3, self.s4, self.s5 = s0, s1, s2, s3, 90, s5
+        self.s0, self.s1, self.s2, self.s3, self.s4, self.s5 = s0, s1, s2, s3, s4, s5
         command = [float(s0), float(s1), float(s2), float(s3), float(s4), float(s5)]
         msg.data = command
         print(f"SENDING: {msg.data}")
@@ -161,6 +188,7 @@ class RobotArm(Node):
         self.update()
 
     def clamp_target(self, pos):
+        # Keep a requested x/y/z target within safe reachable bounds
         x, y, z = pos
         limit = 0.4
         x = max(-limit, min(limit, x))
@@ -169,46 +197,43 @@ class RobotArm(Node):
         return [x, y, z]
 
     def forwardKine(self):
+        # Compute the end-effector's current x/y/z position from joint angles
         full_ik_radians = np.zeros(len(my_chain.links))
         full_ik_radians[2] = math.radians(self.s0 - 90)
         full_ik_radians[4] = math.radians(self.s1 - 90)
         full_ik_radians[7] = math.radians(self.s2 - 90)
         full_ik_radians[10] = math.radians(self.s3 - 90)
         full_ik_radians[13] = math.radians(self.s4 - 90)
-        
+
         transformation_matrix = my_chain.forward_kinematics(full_ik_radians)
         return transformation_matrix[0, 3], transformation_matrix[1, 3], transformation_matrix[2, 3]
 
     def move_smooth(self, x, y, z, claw_angle=0, step_deg=6, mode='M'):
+        # Compute inverse kinematics for a target position and move the arm there
         current_angles = np.zeros(len(my_chain.links), dtype=float)
         current_angles[2] = math.radians((self.s0 or 90) - 90)
         current_angles[4] = math.radians((self.s1 or 90) - 90)
         current_angles[7] = math.radians((self.s2 or 90) - 90)
         current_angles[10] = math.radians((self.s3 or 90) - 90)
         current_angles[13] = math.radians((self.s4 or 90) - 90)
-        
+
         clamped_pos = self.clamp_target([x, y, z])
         target = my_chain.inverse_kinematics(clamped_pos, initial_position=current_angles)
-        
+
         if target is None:
             return False, False
-            
+
         self.s0 = math.degrees(target[2]) + 90
         self.s1 = math.degrees(target[4]) + 90
         self.s2 = math.degrees(target[7]) + 90
         self.s3 = math.degrees(target[10]) + 90
         self.s4 = math.degrees(target[13]) + 90
         self.s5 = claw_angle
-        
+
         return self.sendCommand(mode='M', s0=self.s0, s1=self.s1, s2=self.s2, s3=self.s3, s4=90, s5=self.s5, move_time=step_deg)
 
-    def drawcircle(self, h, k, r, z=0.1, points=50, move_time=0.2):
-        for theta in np.linspace(0, 2 * math.pi, points):
-            x = h + r * math.cos(theta)
-            y = k + r * math.sin(theta)
-            self.move_smooth(x=x, y=y, z=z, step_deg=move_time)
-
     def manual_command_loop(self):
+        # Debug helper: prompt for x/y/z coordinates via terminal and move the arm there
         fk = self.forwardKine()
         print(f"FK Result: {fk}")
         print("\n--- Enter Target Coordinates ---")
@@ -220,6 +245,7 @@ class RobotArm(Node):
             print(f"FK Result: {self.forwardKine()}")
         except Exception as e:
             print(f"ERROR: {e}")
+
 
 def main():
     rclpy.init()

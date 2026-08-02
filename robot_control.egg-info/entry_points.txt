@@ -1,3 +1,0 @@
-[console_scripts]
-Robot_Arm = robot_control.robots.robot_controller:main
-
